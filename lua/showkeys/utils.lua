@@ -65,8 +65,16 @@ local update_win_w = function()
   end
 
   M.gen_winconfig()
-  -- Wrap in pcall to prevent errors from invalid windows
-  pcall(api.nvim_win_set_config, state.win, state.config.winopts)
+  --[[
+    Fix: Add a second check to ensure the window is still valid
+    immediately before calling nvim_win_set_config. This prevents
+    a race condition where the window could become invalid after
+    the initial check but before the config is set.
+  ]]
+  if state.win and api.nvim_win_is_valid(state.win) then
+    -- Wrap in pcall to prevent errors from invalid windows
+    pcall(api.nvim_win_set_config, state.win, state.config.winopts)
+  end
 end
 
 M.draw = function()
@@ -94,7 +102,7 @@ M.clear_and_close = function()
   M.redraw()
   local tmp = state.win
   state.win = nil
-  -- PR1: Add window validity check before closing
+  -- Add window validity check before closing
   if tmp and api.nvim_win_is_valid(tmp) then
     api.nvim_win_close(tmp, true)
   end
