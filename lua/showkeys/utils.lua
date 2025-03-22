@@ -47,6 +47,16 @@ M.gen_winconfig = function()
 end
 
 local update_win_w = function()
+  -- Check and reset invalid window references
+  if state.win and not api.nvim_win_is_valid(state.win) then
+    state.win = nil
+  end
+
+  -- Early return if window becomes invalid
+  if not state.win then
+    return
+  end
+
   local keyslen = #state.keys
   state.w = keyslen + 1 + (2 * keyslen) -- 2 spaces around each key
 
@@ -55,7 +65,8 @@ local update_win_w = function()
   end
 
   M.gen_winconfig()
-  api.nvim_win_set_config(state.win, state.config.winopts)
+  -- Wrap in pcall to prevent errors from invalid windows
+  pcall(api.nvim_win_set_config, state.win, state.config.winopts)
 end
 
 M.draw = function()
@@ -83,7 +94,10 @@ M.clear_and_close = function()
   M.redraw()
   local tmp = state.win
   state.win = nil
-  api.nvim_win_close(tmp, true)
+  -- PR1: Add window validity check before closing
+  if tmp and api.nvim_win_is_valid(tmp) then
+    api.nvim_win_close(tmp, true)
+  end
 end
 
 M.parse_key = function(char)
