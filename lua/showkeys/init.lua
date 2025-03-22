@@ -22,7 +22,7 @@ M.open = function()
     if not state.win or not api.nvim_win_is_valid(state.win) then
       -- Cleanup invalid window reference
       if state.win then
-        pcall(api.nvim_win_close, state.win, true) 
+        pcall(api.nvim_win_close, state.win, true)
       end
       -- Recreate window if missing/invalid
       state.win = api.nvim_open_win(state.buf, false, state.config.winopts)
@@ -40,32 +40,30 @@ M.open = function()
 
   local augroup = api.nvim_create_augroup("ShowkeysAu", { clear = true })
 
+  --[[
+    Fix: Remove redundant window checks. The window validities are already
+    checked in the on_key callbacks, so these checks are unnecessary.
+  ]]
   api.nvim_create_autocmd("VimResized", {
     group = augroup,
     callback = function()
-      if state.win then
-        utils.redraw()
-      end
+      utils.redraw()
     end,
   })
+
 
   api.nvim_create_autocmd("TabEnter", {
     group = augroup,
     callback = function()
-      if state.win then
-        M.close()
-        M.open()
-      end
+      M.close()
+      M.open()
     end,
   })
-
   api.nvim_create_autocmd("WinClosed", {
     group = augroup,
     callback = function()
-      if state.win then
-        M.close()
-        M.open()
-      end
+      M.close()
+      M.open()
     end,
     buffer = state.buf,
   })
