@@ -75,7 +75,20 @@ M.close = function()
   state.keys = {}
   state.w = 1
   state.extmark_id = nil
-  vim.cmd("bd" .. state.buf)
+  --[[
+    Fix: Check if the buffer is still valid before attempting to delete it.
+    The WinClosed autocommand can be triggered after the buffer has already
+    been deleted, causing an error.
+  ]]
+  if state.buf and api.nvim_buf_is_valid(state.buf) then
+    vim.cmd("bd" .. state.buf)
+  end
+  --[[
+    Fix: Reset the buffer reference to avoid trying to delete it again.
+    This is necessary because the WinClosed autocommand can be triggered
+    multiple times, and we only want to delete the buffer once.
+  ]]
+  state.buf = nil
   vim.on_key(nil, state.on_key)
   state.visible = false
   state.win = nil
