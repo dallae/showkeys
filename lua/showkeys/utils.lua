@@ -78,6 +78,15 @@ local update_win_w = function()
 end
 
 M.draw = function()
+  -- Early return if window is invalid
+  if not state.win or not api.nvim_win_is_valid(state.win) then
+    return
+  end
+
+  -- Early return if buffer is invalid
+  if not state.buf or not api.nvim_buf_is_valid(state.buf) then
+    return
+  end
   local virt_txts = require "showkeys.ui"()
 
   if not state.extmark_id then
@@ -109,6 +118,15 @@ M.clear_and_close = function()
 end
 
 M.parse_key = function(char)
+  -- Early return if window is invalid
+  if not state.win or not api.nvim_win_is_valid(state.win) then
+    return
+  end
+
+  -- Early return if buffer is invalid
+  if not state.buf or not api.nvim_buf_is_valid(state.buf) then
+    return
+  end
   local opts = state.config
 
   if vim.tbl_contains(opts.excluded_modes, vim.api.nvim_get_mode().mode) then
