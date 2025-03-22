@@ -18,7 +18,13 @@ M.open = function()
 
   state.timer = vim.loop.new_timer()
   state.on_key = vim.on_key(function(_, char)
-    if not state.win then
+    -- Added check: Verify window exists and is valid
+    if not state.win or not api.nvim_win_is_valid(state.win) then
+      -- Cleanup invalid window reference
+      if state.win then
+        pcall(api.nvim_win_close, state.win, true) 
+      end
+      -- Recreate window if missing/invalid
       state.win = api.nvim_open_win(state.buf, false, state.config.winopts)
       api.nvim_set_option_value("winhl", state.config.winhl, { win = state.win })
     end
